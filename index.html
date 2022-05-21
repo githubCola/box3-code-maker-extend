@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="./mdui/css/mdui.min.css">
+    <link rel="stylesheet" type="text/css" href="./css/style.css">
+    <script src="./mdui/js/mdui.min.js"></script>
+    <script src="./jquery/jquery-1.10.2.min.js"></script>
+    <noscript>Your browser does not support JavaScript!</noscript>
+    <title>Box3-CodeMaker-extend</title>
+</head>
+
+<body class="mdui-theme-primary-indigo" leftmargin=0 topmargin=0 oncontextmenu='return false' ondragstart='return false'
+    onselectstart='return false'>
+
+    <script type="text/javascript">
+        async function getSaveDataCode(code, fields) {
+            let f = fields.split(' ');
+            if (f[0]) {
+                let allCode = code.split('VALUES (\n')[1];
+                let index = allCode.indexOf(')');
+                let c = allCode.slice(0, index).replaceAll('\n', '').replaceAll('  ', '').split(',');
+
+                f.forEach(e => {
+                    if (c.includes('${entity.player.' + e + '}')) {
+                        c[c.indexOf('${entity.player.' + e + '}')] = '${JSON.stringify(entity.player.' + e + ')}';
+                    }
+                });
+
+                let result = code.split('VALUES (\n')[0] + 'VALUES (\n' + c.join(',\n') + '\n            ' + allCode.slice(index);
+                await navigator.clipboard.writeText(result);
+                mdui.alert('复制成功');
+            } else {
+                mdui.alert('输入的字段不符合规范，请重新输入！');
+            }
+        }
+
+        async function getLoadDataCode(code, fields) {
+            let f = fields.split(' ');
+            if (f[0]) {
+                let allCode = code.split('if (data) {\n')[1];
+                let index = allCode.indexOf('}');
+                let c = allCode.slice(0, index).replaceAll('\n', '').replaceAll('  ', '').split(';');
+
+                f.forEach(e => {
+                    if (c.includes(`entity.player.${e} = data.${e}`)) {
+                        c[c.indexOf(`entity.player.${e} = data.${e}`)] = `entity.player.${e} = JSON.parse(data.${e})`;
+                    }
+                });
+
+                let result = code.split('if (data) {\n')[0] + 'if (data) {\n' + c.join(';\n') + '    ' + allCode.slice(index);
+                await navigator.clipboard.writeText(result);
+                mdui.alert('复制成功');
+            } else {
+                mdui.alert('输入的字段不符合规范，请重新输入！');
+            }
+        }
+    </script>
+
+    <div class="mdui-toolbar mdui-color-theme">
+        <span class="mdui-typo-title">Box3-CodeMaker-extend</span>
+        <div class="mdui-toolbar-spacer"></div>
+        <a href="javascript:location.reload();" class="mdui-btn mdui-btn-icon"><i
+            class="mdui-icon material-icons">refresh</i></a>
+    </div><br /><br />
+
+    <span>保存数组、对象格式页面</span>
+    <div class="mdui-textfield mdui-textfield-floating-label">
+        <i class="mdui-icon material-icons"></i>
+        <label class="mdui-textfield-label">请粘贴保存数据的代码到这里</label>
+        <textarea class="mdui-textfield-input" rows="5" id="save"></textarea>
+    </div>
+    <br />
+    <div class="mdui-textfield mdui-textfield-floating-label">
+        <i class="mdui-icon material-icons"></i>
+        <label class="mdui-textfield-label">请粘贴导入数据的代码到这里</label>
+        <textarea class="mdui-textfield-input" rows="5" id="load"></textarea>
+    </div>
+    <br />
+    <div class="mdui-textfield mdui-textfield-floating-label">
+        <i class="mdui-icon material-icons"></i>
+        <label class="mdui-textfield-label">请输入要保存数组或对象的字段（多个字段用空格隔开）</label>
+        <input class="mdui-textfield-input" id="fields"></textarea>
+    </div>
+
+    <button class="mdui-btn mdui-btn-block mdui-btn-raised mdui-ripple"
+        style="width: 170px; height: 40px; margin-top: 15px; margin-bottom: 15px;"
+        onclick="getSaveDataCode($('#save').val(), $('#fields').val())">复制保存数据代码</button>
+    <button class="mdui-btn mdui-btn-block mdui-btn-raised mdui-ripple"
+        style="width: 170px; height: 40px; margin-top: 15px; margin-bottom: 15px;"
+        onclick="getLoadDataCode($('#load').val(), $('#fields').val())">复制加载数据代码</button>
+</body>
+
+</html>
